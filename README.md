@@ -1,4 +1,3 @@
-# Discord-Bot
 # Discord Bot
 
 A feature-rich Discord bot built with Python that supports AI-powered responses, reminders, polls, and user-specific time zones.
