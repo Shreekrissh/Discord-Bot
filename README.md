@@ -25,7 +25,11 @@ A feature-rich Discord bot built with Python that supports AI-powered responses,
    ```
 2. Install dependencies:
    ```sh
-   pip install -r requirements.txt
+   pip install discord.py
+   pip install google-generativeai
+   pip install google-api-core
+   pip install pytz
+
    ```
 3. Create a `.env` file and add:
    ```ini
