@@ -1,0 +1,4 @@
+discord.py
+google-generativeai
+google-api-core
+pytz
