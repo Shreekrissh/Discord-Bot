@@ -32,20 +32,37 @@ async def restart(ctx):
     if not ctx.author.guild_permissions.administrator:
         await ctx.send("❌ You don't have permission to restart the bot.")
         return
-    
+
     await ctx.send("🔄 Restarting...")
-    os.execv(sys.executable, ["python"] + sys.argv)
+
+    python = sys.executable
+    script = os.path.abspath(__file__)
+
+    # Add double quotes around the script path to handle spaces
+    os.execl(python, python, f'"{script}"')
+
 
 # Stop command (admin only)
 @bot.command()
 async def stop(ctx):
     if ctx.author.guild_permissions.administrator:
         await ctx.send("⚠️ Shutting down... Goodbye! 👋")
-        await bot.close()
-        await asyncio.sleep(1)
-        sys.exit(0)
+
+        # Stop the reminders loop if running
+        if check_reminders.is_running():
+            check_reminders.cancel()
+
+        # Stop all running background tasks
+        for task in asyncio.all_tasks():
+            task.cancel()
+
+        try:
+            await bot.close()  # Graceful shutdown
+        except:
+            os._exit(0)  # Force shutdown if needed
     else:
         await ctx.send("❌ You don't have permission to stop the bot.")
+
 
 # Test command
 @bot.command()
@@ -81,6 +98,24 @@ async def mode(ctx, mode_type: str):
     else:
         await ctx.send("⚠️ Invalid mode. Use `!mode ai` or `!mode normal`.")
 
+@bot.command()
+async def summarize(ctx, *, text: str):
+    """Summarizes the given text, only available in AI mode."""
+    if not user_ai_mode.get(ctx.author.id, False):
+        await ctx.send("⚠️ AI commands can only be used in AI mode! Use `!mode ai` to enable it.")
+        return
+
+    summary_prompt = f"Summarize the following text concisely:\n{text}"
+    summary = get_gemini_response(summary_prompt)
+    
+    embed = discord.Embed(
+        title="📖 **Summary:**",
+        description=summary,
+        color=discord.Color.green()
+    )
+    await ctx.send(embed=embed)
+
+
 # Event: When bot is ready
 @bot.event
 async def on_ready():
@@ -102,6 +137,11 @@ async def on_message(message):
 
 @bot.command()
 async def poll(ctx, question: str, *options):
+    """Creates a poll, only available in normal mode."""
+    if user_ai_mode.get(ctx.author.id, False):
+        await ctx.send("⚠️ The poll command is only available in normal mode! Use `!mode normal`.")
+        return
+
     if len(options) < 2 or len(options) > 10:
         await ctx.send("Poll must have between 2 and 10 options!")
         return
@@ -117,6 +157,7 @@ async def poll(ctx, question: str, *options):
     for i in range(len(options)):
         await poll_message.add_reaction(number_emojis[i])
 
+
 # Time Zone Commands
 @bot.command()
 async def settimezone(ctx, tz: str):
@@ -129,6 +170,11 @@ async def settimezone(ctx, tz: str):
 
 @bot.command()
 async def remind(ctx, time: str, *, message: str):
+    """Sets a reminder, only available in normal mode."""
+    if user_ai_mode.get(ctx.author.id, False):
+        await ctx.send("⚠️ The remind command is only available in normal mode! Use `!mode normal`.")
+        return
+
     user_id = ctx.author.id
     user_tz = user_timezones.get(user_id, "UTC")
     try:
