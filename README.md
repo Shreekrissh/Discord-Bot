@@ -7,6 +7,7 @@ A feature-rich Discord bot built with Python that supports AI-powered responses,
 - ⏰ **Reminders**: Users can set, delete, and manage reminders based on their time zones.
 - 🌍 **User-Specific Time Zones**: Users can set their preferred time zones for accurate reminders.
 - 📊 **Polls**: Users can create polls with 2-10 options.
+- 📋 **Summarizing**: Users can summarize their text under **Ai Mode**.
 - 🔄 **Admin Controls**: Admins can restart or stop the bot.
 
 ## Setup Instructions
@@ -55,6 +56,9 @@ python bot.py
 
 ### Polls
 - `!poll <question> <option1> <option2> ... <option10>` → Create a poll.
+
+### Summarize
+- `!summarize <text>` → Summarize a text.
 
 ### Admin Commands
 - `!restart` → Restart the bot.
